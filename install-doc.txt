@@ -1,0 +1,104 @@
+## install jibri docker multiple recordings ##
+
+## description: How to fix ?? --> 1 jibri service will be recording 1 conference room   
+
+## RUN ## Ubuntu 18.04
+
+(1)
+
+RUN apt update && apt install linux-image-extra-virtual
+
+RUN echo "options snd-aloop enable=1,1,1,1,1 index=0,1,2,3,4" > /etc/modprobe.d/alsa-loopback.conf
+
+RUN echo "snd-aloop" > /etc/modules-load.d/snd_aloop.conf
+
+RUN modprobe snd-aloop
+
+RUN lsmod | grep snd_aloop ## checklist snd-aloop
+
+RUN reboot
+
+## must be reboot VM ##!!!!!!
+
+(2)
+
+EDIT ENV file jibri
+
+(3)
+
+RUN docker-compose up -d
+
+(4)
+
+TEST Record Conference 1 room
+
+(5)
+
+RUN nano .jitsi-meet-cfg/jibri/.asoundrc
+
+## add txt from 
+
+...
+slave.pcm "hw:Loopback,0,0"
+...
+slave.pcm "hw:Loopback,0,1"
+...
+slave.pcm "hw:Loopback,1,1"
+...
+slave.pcm "hw:Loopback,1,0"
+...
+slave.pcm "hw:Loopback_1,0,0"
+...
+slave.pcm "hw:Loopback_1,0,1"
+...
+slave.pcm "hw:Loopback_1,1,1"
+...
+slave.pcm "hw:Loopback_1,1,0"
+...
+slave.pcm "hw:Loopback_2,0,0"
+...
+slave.pcm "hw:Loopback_2,0,1"
+...
+slave.pcm "hw:Loopback_2,1,1"
+...
+slave.pcm "hw:Loopback_2,1,0"
+...
+slave.pcm "hw:Loopback_3,0,0"
+...
+slave.pcm "hw:Loopback_3,0,1"
+...
+slave.pcm "hw:Loopback_3,1,1"
+...
+slave.pcm "hw:Loopback_3,1,0"
+...
+slave.pcm "hw:Loopback_4,0,0"
+...
+slave.pcm "hw:Loopback_4,0,1"
+...
+slave.pcm "hw:Loopback_4,1,1"
+...
+slave.pcm "hw:Loopback_4,1,0"
+...
+
+(6)
+
+## Scale Up jibri service follow your must have (ควรจะค่อยๆ Scale ขึ้นทีละ 1 Contrainer)
+
+RUN docker-compose up -d --scale jibri={MUST HAVE SCALE}
+
+## แต่ละ Contrainer ต้อง set ดังนี้ 
+
+## 's/Loopback/0/g' ในตัวเลข 0 กำหนด instance number ยิ่ง scale มาก ยิ่งเพิ่มขึ้น
+RUN docker exec -t jibri_docker_jibri_{NUMBER CONTRAINER SCALE} sed -i 's/Loopback/0/g' /home/jibri/.asoundrc
+
+RUN docker restart jibri_docker_jibri_{NUMBER CONTRAINER SCALE}
+
+## วนไปเลื่อยๆ จนกว่าจะหยุด scale
+
+(7)
+
+TEST Record และ ดู log error
+
+Ref-link: https://nimblecoders.in/jitsi-meet-docker-multiple-jibri-recordings
+
+##############################################################################
