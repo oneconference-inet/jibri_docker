@@ -1,5 +1,6 @@
 {
     "recording_directory":"{{ .Env.JIBRI_RECORDING_DIR }}",
+    "node_sendFile": "{{ .Env.NODESEND_FILE }}",
     // The path to the script which will be run on completed recordings
 {{ if .Env.JIBRI_FINALIZE_RECORDING_SCRIPT_PATH -}}
     "finalize_recording_script_path": "{{ .Env.JIBRI_FINALIZE_RECORDING_SCRIPT_PATH }}",
